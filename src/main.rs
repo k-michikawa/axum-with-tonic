@@ -1,17 +1,38 @@
 mod for_http {
     use axum::{http::StatusCode, response::IntoResponse, Json};
     use serde::{Deserialize, Serialize};
+    use utoipa::{OpenApi, ToSchema};
 
-    #[derive(Deserialize)]
+    #[derive(OpenApi)]
+    #[openapi(
+        paths(echo_for_json),
+        components(
+            schemas(EchoRequest, EchoResponse)
+        ),
+        tags(
+            (name = "echo", description = "Echo items management API")
+        )
+    )]
+    pub struct ApiDoc;
+
+    #[derive(Deserialize, ToSchema)]
     pub struct EchoRequest {
         message: String,
     }
 
-    #[derive(Serialize)]
+    #[derive(Serialize, ToSchema)]
     pub struct EchoResponse {
         message: String,
     }
 
+    #[utoipa::path(
+        get,
+        path = "/echo",
+        request_body = EchoRequest,
+        responses(
+            (status = 200, description = "Echo successfully", body = [EchoResponse])
+        )
+    )]
     pub async fn echo_for_json(Json(request): Json<EchoRequest>) -> impl IntoResponse {
         let message = request.message;
         (
@@ -50,10 +71,16 @@ mod for_grpc {
 use http::header::CONTENT_TYPE;
 use std::net::SocketAddr;
 use tower::{make::Shared, steer::Steer, ServiceExt};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() {
     let http = axum::Router::new()
+        .merge(
+            SwaggerUi::new("/swagger-ui")
+                .url("/api-docs/openapi.json", for_http::ApiDoc::openapi()),
+        )
         .route("/echo", axum::routing::post(for_http::echo_for_json))
         .map_err(axum::BoxError::from)
         .boxed_clone();
