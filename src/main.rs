@@ -10,7 +10,7 @@ mod for_http {
             schemas(EchoRequest, EchoResponse)
         ),
         tags(
-            (name = "echo", description = "Echo items management API")
+            (name = "crate", description = "Echo items management API")
         )
     )]
     pub struct ApiDoc;
@@ -26,11 +26,11 @@ mod for_http {
     }
 
     #[utoipa::path(
-        get,
+        post,
         path = "/echo",
         request_body = EchoRequest,
         responses(
-            (status = 200, description = "Echo successfully", body = [EchoResponse])
+            (status = 200, description = "Echo successfully", body = EchoResponse)
         )
     )]
     pub async fn echo_for_json(Json(request): Json<EchoRequest>) -> impl IntoResponse {
