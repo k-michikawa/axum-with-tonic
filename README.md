@@ -1,6 +1,7 @@
 # Build
 
 ※ protobuf 必要かもしれないので起こられたら `brew install protobuf` とかよしなに。
+
 `cargo build`
 
 # Run
